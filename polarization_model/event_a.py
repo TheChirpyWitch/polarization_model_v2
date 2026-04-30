@@ -11,14 +11,16 @@ DEFAULT_EVENT_A_PARAMS — default mu/r values per AgentState, calibrated in v5:
     Mob      mu=25, r=0.5  (high-intensity, heavy right tail)
 """
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import Dict, Optional
 
 from scipy.stats import nbinom
 
 from polarization_model.agents import AgentState
 
 
-DEFAULT_EVENT_A_PARAMS: dict[AgentState, dict] = {
+DEFAULT_EVENT_A_PARAMS: Dict[AgentState, dict] = {
     AgentState.PROTEST: {"mu": 3,  "r": 0.5},
     AgentState.RIOT:    {"mu": 10, "r": 0.5},
     AgentState.MOB:     {"mu": 25, "r": 0.5},

@@ -281,6 +281,13 @@ class EnhancedPolarizationModel:
 
             agent.connections = list(connections)
 
+        # enforce bidirectionality: if A→B then B→A
+        for agent in self.people:
+            for cid in agent.connections:
+                other = self.people[cid]
+                if agent.unique_id not in other.connections:
+                    other.connections.append(agent.unique_id)
+
     # ------------------------------------------------------------------
     # Per-tick mechanics
     # ------------------------------------------------------------------
@@ -308,9 +315,9 @@ class EnhancedPolarizationModel:
                 alignment = 1 - abs(agent.opinion - stance)
                 affect_delta = trust * src.credibility * 0.1
                 if alignment < 0.3:
-                    affect_delta *= 2.0   # outrage: opposing message
+                    affect_delta *= 2.0    # outrage: opposing message spikes affect
                 elif alignment > 0.7:
-                    affect_delta *= 1.5   # validation: confirming message
+                    affect_delta *= -1.0   # reassurance: aligned trusted message calms affect
                 affect_delta *= (1 + abs(stance))
 
                 agent.affect = float(np.clip(agent.affect + affect_delta, 0, 1))
@@ -327,6 +334,11 @@ class EnhancedPolarizationModel:
                 angle = random.uniform(0, 2 * np.pi)
                 agent.x = float(np.clip(agent.x + np.cos(angle) * 2, self.min_coord, self.max_coord))
                 agent.y = float(np.clip(agent.y + np.sin(angle) * 2, self.min_coord, self.max_coord))
+                # snap home as soon as disposition recovers, so the agent isn't
+                # left at fractional coords for an extra tick after exiting FLIGHT
+                if not agent.unhoused and agent.disposition <= 0 and agent.home_location:
+                    agent.x = float(agent.home_location.x)
+                    agent.y = float(agent.home_location.y)
             elif agent.state in {AgentState.PROTEST, AgentState.RIOT, AgentState.MOB}:
                 # Convergence toward centre simulates protest gathering.
                 agent.x *= 0.95
@@ -341,7 +353,7 @@ class EnhancedPolarizationModel:
         workers_at: dict[tuple[int, int], list[Person]] = defaultdict(list)
         for agent in self.people:
             if agent.employed and not agent.unhoused and agent.work_location:
-                key = (int(agent.x), int(agent.y))
+                key = (round(agent.x), round(agent.y))
                 if key == (agent.work_location.x, agent.work_location.y):
                     workers_at[key].append(agent)
 
@@ -398,6 +410,10 @@ class EnhancedPolarizationModel:
             for cid in to_cut:
                 if random.random() < self.params.rewire_prob:
                     agent.connections.remove(cid)
+                    other = self.people[cid]
+                    if agent.unique_id in other.connections:
+                        other.connections.remove(agent.unique_id)
+
                     candidates = [
                         o for o in self.people
                         if o.unique_id != agent.unique_id
@@ -405,7 +421,10 @@ class EnhancedPolarizationModel:
                         and abs(o.opinion - agent.opinion) <= self.params.segregation_tolerance
                     ]
                     if candidates:
-                        agent.connections.append(random.choice(candidates).unique_id)
+                        new_peer = random.choice(candidates)
+                        agent.connections.append(new_peer.unique_id)
+                        if agent.unique_id not in new_peer.connections:
+                            new_peer.connections.append(agent.unique_id)
 
             if agent.connections:
                 similar = sum(

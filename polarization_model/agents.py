@@ -50,13 +50,18 @@ class ACTRMemory:
     Returns values in roughly [-5, 5]; get_avg_activation normalises to [0, 1].
     """
 
+    MAX_EXPOSURES_PER_ITEM = 100
+
     def __init__(self, decay: float = 0.5):
         self.decay = decay
         # {info_id: [tick_of_exposure, ...]}
         self.exposures: dict[str, list[int]] = defaultdict(list)
 
     def add_exposure(self, info_id: str, current_tick: int) -> None:
-        self.exposures[info_id].append(current_tick)
+        lst = self.exposures[info_id]
+        lst.append(current_tick)
+        if len(lst) > self.MAX_EXPOSURES_PER_ITEM:
+            lst.pop(0)
 
     def get_activation(self, info_id: str, current_tick: int) -> float:
         if info_id not in self.exposures or not self.exposures[info_id]:
@@ -65,6 +70,7 @@ class ACTRMemory:
         total = sum(
             max(1, current_tick - t) ** (-self.decay)
             for t in self.exposures[info_id]
+            if current_tick - t <= 500
         )
         return np.log(total) if total > 0 else float("-inf")
 
