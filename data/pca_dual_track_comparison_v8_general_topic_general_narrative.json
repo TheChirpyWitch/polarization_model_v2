@@ -1,0 +1,75 @@
+{
+  "recommended_default_track": "weighted",
+  "count_track": {
+    "track": "count",
+    "matrix_shape_topic_x_narrative": [
+      9,
+      8
+    ],
+    "topic_order": [
+      "virus origins, lab theories & biology",
+      "treatment, symptoms & hospitals",
+      "travel, mobility & border control",
+      "lockdowns, mandates & social distancing",
+      "vaccines & immunity",
+      "politics, government & policy",
+      "social & economic impact",
+      "conspiracy theories & misinformation",
+      "general/other"
+    ],
+    "narrative_order": [
+      "government transparency & trust",
+      "institutional competence & failure",
+      "threat amplification & fear",
+      "misinformation & conspiracy narratives",
+      "public health guidance & compliance",
+      "scientific evidence & uncertainty",
+      "solidarity & mutual protection",
+      "general/other"
+    ],
+    "topic_count": 9,
+    "narrative_count": 8,
+    "tick_count": 1606,
+    "pc1_explained_variance_ratio": 0.39512957448417846,
+    "pc1_scaled_min": -1.0,
+    "pc1_scaled_max": 1.0,
+    "pc1_scaled_mean": -0.07751860236997359,
+    "pc1_scaled_std": 0.5976600749552197
+  },
+  "weighted_track": {
+    "track": "weighted",
+    "matrix_shape_topic_x_narrative": [
+      9,
+      8
+    ],
+    "topic_order": [
+      "virus origins, lab theories & biology",
+      "treatment, symptoms & hospitals",
+      "travel, mobility & border control",
+      "lockdowns, mandates & social distancing",
+      "vaccines & immunity",
+      "politics, government & policy",
+      "social & economic impact",
+      "conspiracy theories & misinformation",
+      "general/other"
+    ],
+    "narrative_order": [
+      "government transparency & trust",
+      "institutional competence & failure",
+      "threat amplification & fear",
+      "misinformation & conspiracy narratives",
+      "public health guidance & compliance",
+      "scientific evidence & uncertainty",
+      "solidarity & mutual protection",
+      "general/other"
+    ],
+    "topic_count": 9,
+    "narrative_count": 8,
+    "tick_count": 1606,
+    "pc1_explained_variance_ratio": 0.46637563585486,
+    "pc1_scaled_min": -1.0,
+    "pc1_scaled_max": 1.0,
+    "pc1_scaled_mean": -0.17498727566785383,
+    "pc1_scaled_std": 0.5290947003928831
+  }
+}

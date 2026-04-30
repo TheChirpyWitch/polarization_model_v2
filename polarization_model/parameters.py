@@ -3,6 +3,7 @@ Simulation configuration and spatial primitives.
 """
 
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -49,8 +50,8 @@ class ModelParameters:
 
     # --- Economic stress ---
     increase_cost_of_goods: bool = True
-    # Multiplicative monthly inflation rate (e.g. 1.8 = 80 % monthly growth)
-    cost_of_goods_growth_rate: float = 1.8
+    # Mean monthly CPI-U multiplier over 2021-2023 simulation window (BLS, 2024)
+    cost_of_goods_growth_rate: float = 1.0038
 
     # --- Info-source mix (relative weights for random assignment) ---
     parts_govwebsite: int = 5
@@ -75,3 +76,6 @@ class ModelParameters:
 
     # --- Initial social network ---
     initial_connections: int = 5
+
+    # --- Reproducibility ---
+    seed: Optional[int] = None

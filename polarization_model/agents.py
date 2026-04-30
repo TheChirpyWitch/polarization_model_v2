@@ -32,8 +32,10 @@ class AgentState(Enum):
 
     QUIET = "quiet"
     AGITATED = "agitated"
-    FIGHT = "fight"    # protesting / confrontational
-    FLIGHT = "flight"  # withdrawing / avoidant
+    FLIGHT = "flight"    # fleeing/avoiding
+    PROTEST = "Protest"
+    RIOT = "Riot"
+    MOB = "Mob"
 
 
 class ACTRMemory:
@@ -132,6 +134,10 @@ class Person:
 
     impulse_control: float = 1.0  # lower -> more impulsive (driven by age)
 
+    # Per-agent activation thresholds (Granovetter 1978; drawn in _create_people)
+    protest_threshold: float = 0.3
+    riot_threshold: float = 0.6
+
     # --- Behavioural state ---
     state: AgentState = AgentState.QUIET
 
@@ -200,19 +206,32 @@ class Person:
 
     def update_state(self) -> None:
         """
-        Map disposition to behavioural state.
+        Determine behavioral state from disposition and affect.
 
-        D > 0 + high affect  -> FIGHT
-        D > 0 + lower affect -> FLIGHT
-        D close to 0         -> AGITATED
-        D < -0.2             -> QUIET
+        [MEDIUM] Flight/fight split uses age-modulated threshold (Berkowitz 1989;
+                 Bracha 2004): impulse_control = 1 - (age-18)/100.
+        [MEDIUM] PROTEST threshold is per-agent (Granovetter 1978): drawn from
+                 N(0.3, 0.1) in _create_people.
+        [HIGH]   RIOT->MOB threshold lowers when contagion is high
+                 (Le Bon 1895; Lemos & Coelho 2015).
         """
-        if self.disposition > 0:
-            self.state = AgentState.FIGHT if self.affect > 0.5 else AgentState.FLIGHT
-        elif self.disposition > -0.2:
-            self.state = AgentState.AGITATED
-        else:
+        D, A = self.disposition, self.affect
+
+        if D <= -0.2:
             self.state = AgentState.QUIET
+        elif D <= 0.0:
+            self.state = AgentState.AGITATED
+        else:                          # D > 0: activated
+            if A <= 0.5 * self.impulse_control:
+                self.state = AgentState.FLIGHT
+            elif D <= self.protest_threshold:
+                self.state = AgentState.PROTEST
+            else:
+                riot_to_mob = self.riot_threshold - 0.3 * max(0.0, self.contagion - 0.5)
+                if D <= riot_to_mob:
+                    self.state = AgentState.RIOT
+                else:
+                    self.state = AgentState.MOB
 
     # ------------------------------------------------------------------
     # Visualisation helper
@@ -220,10 +239,12 @@ class Person:
 
     def get_color(self) -> str:
         if self.unhoused:
-            return "gray"
+            return "#888780"
         return {
-            AgentState.QUIET: "green",
-            AgentState.AGITATED: "yellow",
-            AgentState.FIGHT: "red",
-            AgentState.FLIGHT: "orange",
-        }.get(self.state, "blue")
+            AgentState.QUIET:    "#3B6D11",  # dark green
+            AgentState.AGITATED: "#DAA520",  # goldenrod
+            AgentState.FLIGHT:   "#185FA5",  # steel blue
+            AgentState.PROTEST:  "#E69500",  # amber
+            AgentState.RIOT:     "#D85A30",  # burnt orange
+            AgentState.MOB:      "#A32D2D",  # dark red
+        }.get(self.state, "#888780")

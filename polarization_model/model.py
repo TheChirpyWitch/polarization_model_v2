@@ -82,6 +82,10 @@ class EnhancedPolarizationModel:
 
     def setup(self) -> None:
         """Initialise / reset the model and collect tick-0 data."""
+        if self.params.seed is not None:
+            random.seed(self.params.seed)
+            np.random.seed(self.params.seed)
+
         self.tick = 0
         self.day_counter = 0
         self.cost_of_goods = 100.0
@@ -97,8 +101,15 @@ class EnhancedPolarizationModel:
         self.data.collect(self)
         self.is_setup = True
 
-    def step(self) -> None:
-        """Advance the simulation by one tick."""
+    def step(self, skip_eim: bool = False) -> None:
+        """Advance the simulation by one tick.
+
+        Parameters
+        ----------
+        skip_eim : If True, the internal external_affect_fn is not applied
+                   during this tick.  Set this when the caller has already
+                   injected a source-specific signal to avoid double injection.
+        """
         if not self.is_setup:
             return
 
@@ -108,7 +119,7 @@ class EnhancedPolarizationModel:
         self._move_people()
         self._workplace_interactions()
         self._update_network()
-        self._update_agent_zero()
+        self._update_agent_zero(skip_eim=skip_eim)
 
         if self.tick % 2 == 0:
             self.day_counter += 1
@@ -219,6 +230,10 @@ class EnhancedPolarizationModel:
             agent.impulse_control = 1.0 - (agent.age - 18) / 100
             agent.tau = p.tau_base + (agent.age - 18) * p.tau_age_factor
 
+            # Per-agent activation thresholds (Granovetter 1978)
+            agent.protest_threshold = float(np.clip(random.gauss(0.3, 0.1), 0.1, 0.5))
+            agent.riot_threshold = float(np.clip(random.gauss(0.6, 0.1), 0.4, 0.9))
+
             agent.home_location = random.choice(self.home_locations)
             agent.x, agent.y = agent.home_location.x, agent.home_location.y
 
@@ -312,7 +327,7 @@ class EnhancedPolarizationModel:
                 angle = random.uniform(0, 2 * np.pi)
                 agent.x = float(np.clip(agent.x + np.cos(angle) * 2, self.min_coord, self.max_coord))
                 agent.y = float(np.clip(agent.y + np.sin(angle) * 2, self.min_coord, self.max_coord))
-            elif agent.state == AgentState.FIGHT:
+            elif agent.state in {AgentState.PROTEST, AgentState.RIOT, AgentState.MOB}:
                 # Convergence toward centre simulates protest gathering.
                 agent.x *= 0.95
                 agent.y *= 0.95
@@ -401,13 +416,18 @@ class EnhancedPolarizationModel:
                 )
                 agent.is_happy = (similar / len(agent.connections)) >= 0.5
 
-    def _update_agent_zero(self) -> None:
+    def _update_agent_zero(self, skip_eim: bool = False) -> None:
         """
         Update all Agent Zero++ components (C, A decay, tau, D, state).
 
         External affect is injected via external_affect_fn so the caller can
         swap between the weighted JSON signal and per-source NEIM signals
         without touching model internals.
+
+        Parameters
+        ----------
+        skip_eim : If True, skip the external affect injection this tick.
+                   Use when the caller has already applied a per-source signal.
         """
         alpha = 0.10
         external = self.external_affect_fn(self.tick)
@@ -418,14 +438,20 @@ class EnhancedPolarizationModel:
                 active = sum(
                     1 for cid in agent.connections
                     if cid < len(self.people)
-                    and self.people[cid].state in {AgentState.AGITATED, AgentState.FIGHT}
+                    and self.people[cid].state in {
+                        AgentState.AGITATED, AgentState.PROTEST,
+                        AgentState.RIOT, AgentState.MOB,
+                    }
                 )
                 agent.contagion = active / len(agent.connections)
             else:
                 agent.contagion = 0.0
 
             # Affect decay blended with the external EIM signal
-            agent.affect = (1 - alpha) * agent.affect * 0.95 + alpha * external
+            if not skip_eim:
+                agent.affect = (1 - alpha) * agent.affect * 0.95 + alpha * external
+            else:
+                agent.affect = agent.affect * 0.95
 
             # Economic hardship lowers the action threshold
             if agent.unhoused:
@@ -478,8 +504,10 @@ class EnhancedPolarizationModel:
         print("\nAgent States:")
         print(f"  Quiet: {self.data.count_quiet[-1]}")
         print(f"  Agitated: {self.data.count_agitated[-1]}")
-        print(f"  Fight: {self.data.count_fight[-1]}")
         print(f"  Flight: {self.data.count_flight[-1]}")
+        print(f"  Protest: {self.data.count_protest[-1]}")
+        print(f"  Riot: {self.data.count_riot[-1]}")
+        print(f"  Mob: {self.data.count_mob[-1]}")
 
         print("\nOpinions:")
         print(f"  Mean: {self.data.opinion_mean[-1]:.4f}")

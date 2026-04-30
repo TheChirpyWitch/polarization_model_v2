@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -54,10 +55,12 @@ def plot_results(model, save_path: str | Path | None = None) -> plt.Figure:
         model.data.ticks,
         model.data.count_quiet,
         model.data.count_agitated,
-        model.data.count_fight,
         model.data.count_flight,
-        labels=["Quiet", "Agitated", "Fight", "Flight"],
-        colors=["green", "yellow", "red", "orange"],
+        model.data.count_protest,
+        model.data.count_riot,
+        model.data.count_mob,
+        labels=["Quiet", "Agitated", "Flight", "Protest", "Riot", "Mob"],
+        colors=["#3B6D11", "#DAA520", "#185FA5", "#E69500", "#D85A30", "#A32D2D"],
         alpha=0.7,
     )
     ax.set_xlabel("Ticks")
@@ -117,6 +120,18 @@ def plot_results(model, save_path: str | Path | None = None) -> plt.Figure:
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_title("Spatial Distribution")
+
+    color_map = {
+        "Quiet":    "#3B6D11",
+        "Agitated": "#DAA520",
+        "Flight":   "#185FA5",
+        "Protest":  "#E69500",
+        "Riot":     "#D85A30",
+        "Mob":      "#A32D2D",
+        "Unhoused": "#888780",
+    }
+    patches = [mpatches.Patch(color=c, label=s) for s, c in color_map.items()]
+    ax.legend(handles=patches, fontsize=7, loc="upper right")
 
     plt.tight_layout()
 

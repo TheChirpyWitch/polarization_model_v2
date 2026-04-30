@@ -42,8 +42,10 @@ class DataCollector:
         # Behavioural-state headcounts
         self.count_quiet: list[int] = []
         self.count_agitated: list[int] = []
-        self.count_fight: list[int] = []
         self.count_flight: list[int] = []
+        self.count_protest: list[int] = []
+        self.count_riot: list[int] = []
+        self.count_mob: list[int] = []
 
         # Opinion distribution statistics
         self.opinion_mean: list[float] = []
@@ -102,8 +104,10 @@ class DataCollector:
 
         self.count_quiet.append(state_counts[AgentState.QUIET])
         self.count_agitated.append(state_counts[AgentState.AGITATED])
-        self.count_fight.append(state_counts[AgentState.FIGHT])
         self.count_flight.append(state_counts[AgentState.FLIGHT])
+        self.count_protest.append(state_counts[AgentState.PROTEST])
+        self.count_riot.append(state_counts[AgentState.RIOT])
+        self.count_mob.append(state_counts[AgentState.MOB])
 
         for pref, cnt in pref_counts.items():
             self.info_pref_counts[pref].append(cnt)
@@ -129,8 +133,10 @@ class DataCollector:
             "disposition_max": self.disposition_max,
             "count_quiet": self.count_quiet,
             "count_agitated": self.count_agitated,
-            "count_fight": self.count_fight,
             "count_flight": self.count_flight,
+            "count_protest": self.count_protest,
+            "count_riot": self.count_riot,
+            "count_mob": self.count_mob,
             "count_employed": self.count_employed,
             "count_unhoused": self.count_unhoused,
             "avg_connections": self.avg_connections,
