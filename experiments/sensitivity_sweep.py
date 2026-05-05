@@ -38,9 +38,9 @@ from polarization_model.signals import load_excel_signal, get_signal
 from polarization_model.agents import AgentState
 
 
-# ---------------------------------------------------------------------------
+
 # Configuration
-# ---------------------------------------------------------------------------
+
 
 SIM_START = 699   # 2021-01-02
 SIM_END = 1606    # 2023-12-25
@@ -64,9 +64,8 @@ DEFAULT_VALUES = {
 ACTIVE_STATES = {AgentState.PROTEST, AgentState.RIOT, AgentState.MOB}
 
 
-# ---------------------------------------------------------------------------
 # Single-cell run
-# ---------------------------------------------------------------------------
+
 
 def run_one(
     signal_fn: Callable[[int], float],
@@ -106,9 +105,7 @@ def run_one(
     }
 
 
-# ---------------------------------------------------------------------------
 # Sweep driver
-# ---------------------------------------------------------------------------
 
 def run_sweep(
     sources: dict,
@@ -185,9 +182,7 @@ def run_sweep(
             print(f"{row['value']:>8.2f} {row['source']:>8} {mean_d:>25} {row['fight_count_avg']:>20.0f}")
 
 
-# ---------------------------------------------------------------------------
 # CLI entrypoint
-# ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="Parameter sensitivity sweep")
