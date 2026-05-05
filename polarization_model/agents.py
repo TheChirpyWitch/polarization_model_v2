@@ -140,6 +140,10 @@ class Person:
 
     impulse_control: float = 1.0  # lower -> more impulsive (driven by age)
 
+    # Disposition formula coefficients (set from ModelParameters in _create_people)
+    memory_weight: float = 0.2       # lambda: weight of memory term in D
+    opinion_amplifier: float = 0.3   # beta: opinion-extremity multiplier
+
     # Per-agent activation thresholds (Granovetter 1978; drawn in _create_people)
     protest_threshold: float = 0.3
     riot_threshold: float = 0.6
@@ -194,17 +198,19 @@ class Person:
 
     def calculate_disposition(self, current_tick: int) -> float:
         """
-        Compute D = (A + P + C + E*0.2) * amplifier - tau.
+        Compute D = (A + P + C + memory_weight*E) * amplifier - tau.
 
-        The opinion-extremity amplifier (1 + beta*|opinion|) encodes
-        motivational salience: extreme views heighten reactivity.
+        amplifier = 1 + opinion_amplifier * |opinion|
+
+        Both memory_weight (lambda) and opinion_amplifier (beta) are agent
+        fields populated from ModelParameters during _create_people.
         """
         E = self.memory.get_avg_activation(current_tick) if self.memory else 0.0
-        beta = 0.3
-        amplifier = 1 + beta * abs(self.opinion)
+        amplifier = 1 + self.opinion_amplifier * abs(self.opinion)
 
         self.disposition = (
-            (self.affect + self.probability + self.contagion + E * 0.2)
+            (self.affect + self.probability + self.contagion
+             + self.memory_weight * E)
             * amplifier
             - self.tau
         )

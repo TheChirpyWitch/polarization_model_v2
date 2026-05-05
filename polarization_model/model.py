@@ -234,6 +234,10 @@ class EnhancedPolarizationModel:
             agent.protest_threshold = float(np.clip(random.gauss(0.3, 0.1), 0.1, 0.5))
             agent.riot_threshold = float(np.clip(random.gauss(0.6, 0.1), 0.4, 0.9))
 
+            # Disposition formula coefficients copied from ModelParameters
+            agent.memory_weight = p.memory_weight
+            agent.opinion_amplifier = p.opinion_amplifier
+
             agent.home_location = random.choice(self.home_locations)
             agent.x, agent.y = agent.home_location.x, agent.home_location.y
 
@@ -448,7 +452,8 @@ class EnhancedPolarizationModel:
         skip_eim : If True, skip the external affect injection this tick.
                    Use when the caller has already applied a per-source signal.
         """
-        alpha = 0.10
+        alpha = self.params.affect_eim_alpha
+        decay = self.params.affect_decay
         external = self.external_affect_fn(self.tick)
 
         for agent in self.people:
@@ -468,9 +473,9 @@ class EnhancedPolarizationModel:
 
             # Affect decay blended with the external EIM signal
             if not skip_eim:
-                agent.affect = (1 - alpha) * agent.affect * 0.95 + alpha * external
+                agent.affect = (1 - alpha) * agent.affect * decay + alpha * external
             else:
-                agent.affect = agent.affect * 0.95
+                agent.affect = agent.affect * decay
 
             # Economic hardship lowers the action threshold
             if agent.unhoused:

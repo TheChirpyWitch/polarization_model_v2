@@ -71,6 +71,21 @@ class ModelParameters:
     # Standard literature value is 0.5; lower values = slower forgetting.
     memory_decay: float = 0.5
 
+    # --- Agent Zero++ disposition formula coefficients ---
+    # D = (A + P + C + memory_weight*E) * (1 + opinion_amplifier*|opinion|) - tau
+    # memory_weight: how much normalised ACT-R activation contributes to D.
+    # opinion_amplifier: motivational salience multiplier for extreme opinions.
+    memory_weight: float = 0.2
+    opinion_amplifier: float = 0.3
+
+    # --- External affect injection ---
+    # Per-tick blend weight for the EIM/NEIM signal:
+    #     A_t = (1 - affect_eim_alpha) * A_{t-1} * affect_decay
+    #         + affect_eim_alpha * external_signal_t
+    # Lower alpha = slower assimilation of external signal into agent affect.
+    affect_eim_alpha: float = 0.10
+    affect_decay: float = 0.95
+
     # --- Broadcast cadence ---
     broadcast_interval: int = 10
 
