@@ -231,12 +231,15 @@ class EnhancedPolarizationModel:
             agent.tau = p.tau_base + (agent.age - 18) * p.tau_age_factor
 
             # Per-agent activation thresholds (Granovetter 1978)
-            agent.protest_threshold = float(np.clip(random.gauss(0.3, 0.1), 0.1, 0.5))
-            agent.riot_threshold = float(np.clip(random.gauss(0.6, 0.1), 0.4, 0.9))
+            agent.protest_threshold = float(np.clip(
+                random.gauss(p.protest_threshold_mean, p.protest_threshold_sd), 0.5, 0.9))
+            agent.riot_threshold = float(np.clip(
+                random.gauss(p.riot_threshold_mean, p.riot_threshold_sd), 1.0, 1.5))
 
             # Disposition formula coefficients copied from ModelParameters
             agent.memory_weight = p.memory_weight
             agent.opinion_amplifier = p.opinion_amplifier
+            agent.contagion_mob_factor = p.contagion_mob_factor
 
             agent.home_location = random.choice(self.home_locations)
             agent.x, agent.y = agent.home_location.x, agent.home_location.y

@@ -71,6 +71,20 @@ class ModelParameters:
     # Standard literature value is 0.5; lower values = slower forgetting.
     memory_decay: float = 0.5
 
+    # --- Per-agent state-transition thresholds (Granovetter 1978) ---
+    # Calibrated to ACLED 2021 proportions:
+    #   Peaceful protest ~97%, Protest w/ intervention ~2.5%, Mob ~0.65%, Riot ~0.01%
+    # Protest zone: D in (0, protest_threshold]  -> PROTEST
+    # Riot zone:    D in (protest_threshold, riot_threshold] -> RIOT
+    # Mob zone:     D > riot_threshold -> MOB
+    protest_threshold_mean: float = 0.7
+    protest_threshold_sd: float = 0.1
+    riot_threshold_mean: float = 1.2
+    riot_threshold_sd: float = 0.1
+    # How much high contagion lowers the riot->mob threshold.
+    # Original 0.3 caused runaway mob cascades; 0.1 limits the effect.
+    contagion_mob_factor: float = 0.1
+
     # --- Agent Zero++ disposition formula coefficients ---
     # D = (A + P + C + memory_weight*E) * (1 + opinion_amplifier*|opinion|) - tau
     # memory_weight: how much normalised ACT-R activation contributes to D.

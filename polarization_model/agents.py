@@ -145,8 +145,9 @@ class Person:
     opinion_amplifier: float = 0.3   # beta: opinion-extremity multiplier
 
     # Per-agent activation thresholds (Granovetter 1978; drawn in _create_people)
-    protest_threshold: float = 0.3
-    riot_threshold: float = 0.6
+    protest_threshold: float = 0.7
+    riot_threshold: float = 1.2
+    contagion_mob_factor: float = 0.1
 
     # --- Behavioural state ---
     state: AgentState = AgentState.QUIET
@@ -239,7 +240,7 @@ class Person:
             elif D <= self.protest_threshold:
                 self.state = AgentState.PROTEST
             else:
-                riot_to_mob = self.riot_threshold - 0.3 * max(0.0, self.contagion - 0.5)
+                riot_to_mob = self.riot_threshold - self.contagion_mob_factor * max(0.0, self.contagion - 0.5)
                 if D <= riot_to_mob:
                     self.state = AgentState.RIOT
                 else:
