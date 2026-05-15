@@ -21,9 +21,9 @@ from polarization_model.agents import AgentState
 
 
 DEFAULT_EVENT_A_PARAMS: Dict[AgentState, dict] = {
-    AgentState.PROTEST: {"mu": 3,  "r": 0.5},
-    AgentState.RIOT:    {"mu": 10, "r": 0.5},
-    AgentState.MOB:     {"mu": 25, "r": 0.5},
+    AgentState.PROTEST: {"mu": 0,  "r": 0.5},
+    AgentState.PROTEST_WITH_INTERVENTION: {"mu": 0.5, "r": 0.5},
+    AgentState.MOB:     {"mu": 2, "r": 0.5},
 }
 
 
